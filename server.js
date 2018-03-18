@@ -78,6 +78,17 @@ let todos = [],
 //     completed: true
 // }];
 
+// Notice the new error argument
+app.use(function (error, req, res, next) {
+    // Check if the error is a SyntaxError
+    if (error instanceof SyntaxError) {
+        // Send back some custom error code and message
+    } else {
+        // No error? Continue on.
+        next();
+    }
+});
+
 /**
  *  Body parse let's you access JSON as a JavaScript object when using req.body.
  *  Without body parser, you'd have to manually parse the body to make it useful.
@@ -101,7 +112,7 @@ app.get('/todos', (req, res) => {
 
 // GET /todos/:id    => : represent var(id) that's gonna passed in, that's what exactly express uses to parse data coming in
 app.get('/todos/:id', (req, res) => {
-    var todoId = parseInt(req.params.id, 10);
+    let todoId = parseInt(req.params.id, 10);
     /* we gonna do it with underscore */
     // let mathcedTodo = todos.find((todo, i, arr) => {
     //     return todo.id === todoId; // any req parameters always string!, ***parseInt(string, base);
@@ -131,6 +142,28 @@ app.post('/todos', (req, res) => {
 
     res.status(200).json(body);
 });
+
+// DELETE /todos:id
+app.delete('/todos/:id', (req, res) => {
+    let todoId = parseInt(req.params.id, 10);
+
+    // let mathcedTodo = todos.find((todo, i, arr) => {
+    //     return todo.id === todoId; // any req parameters always string!, ***parseInt(string, base);
+    // });
+
+    // todos = todos.filter((todo, i, arr) => {
+    //     return todo !== mathcedTodo;
+    // });
+
+    let mathcedTodo = _.findWhere(todos, { id: todoId });
+
+    if (!mathcedTodo)
+        return res.status(404).json({ "error": "no todo found with that id" });
+
+    todos = _.without(todos, mathcedTodo);
+    res.status(200).json(mathcedTodo);
+});
+
 
 app.listen(PORT, () => {
     console.log('Express listening on port: %i', PORT);
