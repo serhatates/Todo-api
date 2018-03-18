@@ -22,6 +22,13 @@
  * git log
  * git diff , then hit Q to come back command prompt
  * 
+ * heroku open, open url in default browser
+ * 
+ * ---after some changes to deploy heroku---
+ * git status
+ * git commit -am "some message"
+ * git push heroku
+ * 
  * ---some tricky parts---
  * git remote -v, see all apps
  * "start": "node server.js" => to your scripts in package.json. Heroku simply doesn't know what file is the entry point to your app! 
@@ -34,27 +41,49 @@
  *}
  *
  * Pushing to Git first then to Herou is simply a product of habit. You don't need to push to GitHub first (or even use it at all) to push and deploy to Heroku.
+ * 
+ * ------create repo on github------
+ * 
+ * go github.com and create "New repository" => name "Todo-api"
+ * git remote add origin https://github.com/serhatates/Todo-api.git
+ * git push -u origin master
+ * 
  */
+
 
 const express = require('express'),
     app = express(),
+    bodyParser = require('body-parser'),
     PORT = process.env.PORT || 3000; // if PORT env not define on heroku simply gonna set 3000
 
-const todos = [{
-    id: 1,
-    description: 'Meet gf for lunch',
-    completed: false
-},
-{
-    id: 2,
-    description: 'Go to market',
-    completed: false
-},
-{
-    id: 3,
-    description: 'Feed the cat',
-    completed: true
-}];
+let todos = [],
+    todoNextId = 1;
+
+// const todos = [{
+//     id: 1,
+//     description: 'Meet gf for lunch',
+//     completed: false
+// },
+// {
+//     id: 2,
+//     description: 'Go to market',
+//     completed: false
+// },
+// {
+//     id: 3,
+//     description: 'Feed the cat',
+//     completed: true
+// }];
+
+/**
+ *  Body parse let's you access JSON as a JavaScript object when using req.body.
+ *  Without body parser, you'd have to manually parse the body to make it useful.
+ * 
+ *  Body parser will only parse the content if the Content-Type header is properly set.
+ */
+
+// app.use which lets us set up some middleware (app level)
+app.use(bodyParser.json()); // now anytime req comes in express is going to parse it, and we re gonna be able to access via req.body
 
 app.get('/', (req, res) => {
     res.send('Todo API ROOT');
@@ -83,9 +112,16 @@ app.get('/todos/:id', (req, res) => {
 });
 
 
-app.listen(PORT, () => {
-    console.log('Express listening on port: %i', PORT);
+// POST /todos
+// we need to load body-parser module and it's an express middleware
+app.post('/todos', (req, res) => {
+    req.body = Object.assign({ id: todoNextId++ }, req.body);
+    todos.push(req.body);
+
+    res.status(200).json(req.body);
 });
 
 
-
+app.listen(PORT, () => {
+    console.log('Express listening on port: %i', PORT);
+});
