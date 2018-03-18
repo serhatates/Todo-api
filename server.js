@@ -17,6 +17,7 @@
  * git add .
  * git status
  * git commit -am "Init repo"
+ *  [git push, push to github assume that we create repo on github before]
  * git push heroku master
  * heroku logs
  * git log
@@ -55,6 +56,8 @@ const express = require('express'),
     app = express(),
     bodyParser = require('body-parser'),
     PORT = process.env.PORT || 3000; // if PORT env not define on heroku simply gonna set 3000
+
+const _ = require('underscore');
 
 let todos = [],
     todoNextId = 1;
@@ -98,11 +101,12 @@ app.get('/todos', (req, res) => {
 
 // GET /todos/:id    => : represent var(id) that's gonna passed in, that's what exactly express uses to parse data coming in
 app.get('/todos/:id', (req, res) => {
-    let mathcedTodo = todos.find((todo, i, arr) => {
-        return todo.id === parseInt(req.params.id, 10); // any req parameters always string!, ***parseInt(string, base);
-    });
-
-    console.log('found %o', mathcedTodo);
+    var todoId = parseInt(req.params.id, 10);
+    /* we gonna do it with underscore */
+    // let mathcedTodo = todos.find((todo, i, arr) => {
+    //     return todo.id === todoId; // any req parameters always string!, ***parseInt(string, base);
+    // });
+    let mathcedTodo = _.findWhere(todos, { id: todoId });
 
     // undefined is falsie you could use like that, object is truthy => if (undefined) falsie, if(object) truthy
     if (typeof mathcedTodo === 'undefined')
@@ -115,12 +119,18 @@ app.get('/todos/:id', (req, res) => {
 // POST /todos
 // we need to load body-parser module and it's an express middleware
 app.post('/todos', (req, res) => {
-    req.body = Object.assign({ id: todoNextId++ }, req.body);
-    todos.push(req.body);
+    let body = _.pick(req.body, 'description', 'completed');
 
-    res.status(200).json(req.body);
+    // body validation with underscore lib
+    if (!_.isBoolean(body.completed) || !_.isString(body.description) || body.description.trim().length === 0)
+        return res.status(400).send(); // 400 means req can't be completed because of bad data was povided, BAD REQUEST
+
+    body.description = body.description.trim();
+    body = Object.assign({ id: todoNextId++ }, body);
+    todos.push(body);
+
+    res.status(200).json(body);
 });
-
 
 app.listen(PORT, () => {
     console.log('Express listening on port: %i', PORT);
