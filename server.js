@@ -130,7 +130,7 @@ app.get('/todos/:id', (req, res) => {
 // POST /todos
 // we need to load body-parser module and it's an express middleware
 app.post('/todos', (req, res) => {
-    let body = _.pick(req.body, 'description', 'completed');
+    let body = _.pick(req.body, 'description', 'completed'); // only take these key vakue pairs
 
     // body validation with underscore lib
     if (!_.isBoolean(body.completed) || !_.isString(body.description) || body.description.trim().length === 0)
@@ -162,6 +162,33 @@ app.delete('/todos/:id', (req, res) => {
 
     todos = _.without(todos, mathcedTodo);
     res.status(200).json(mathcedTodo);
+});
+
+// PATCH /todos/:id
+app.patch('/todos/:id', (req, res) => {
+    let todoId = parseInt(req.params.id, 10),
+        mathcedTodo = _.findWhere(todos, { id: todoId });
+
+    let body = _.pick(req.body, 'description', 'completed'),
+        validAttributes = {};
+
+    if (!mathcedTodo)
+        return res.status(404).json({ "error": "no todo found with that id" });
+
+    if (body.hasOwnProperty('completed') && _.isBoolean(body.completed))
+        validAttributes['completed'] = body.completed;
+    else if (body.hasOwnProperty('completed'))
+        return res.status(400).send();
+
+
+    if (body.hasOwnProperty('description') && _.isString(body.description) && body.description.trim().length > 0)
+        validAttributes['description'] = body.description;
+    else if (body.hasOwnProperty('description'))
+        return res.status(400).send();
+
+    _.extend(mathcedTodo, validAttributes);  // manipulate the original object, no need to return it
+    res.status(200).json(mathcedTodo)
+
 });
 
 
