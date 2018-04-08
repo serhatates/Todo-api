@@ -17,7 +17,7 @@
  * git add .
  * git status
  * git commit -am "Init repo"
- *  [git push, push to github assume that we create repo on github before]
+ * [git push, push to github assume that we create repo on github before]
  * git push heroku master
  * heroku logs
  * git log
@@ -51,6 +51,7 @@
  * 
  */
 
+//   
 
 const express = require('express'),
     app = express(),
@@ -103,10 +104,20 @@ app.get('/', (req, res) => {
     res.send('Todo API ROOT');
 });
 
-// GET /todos
+// GET /todos?completed=true
 app.get('/todos', (req, res) => {
+    let queryParams = req.query,
+        filteredTodos = todos;
+
+    if (queryParams.hasOwnProperty('completed') && queryParams.completed === 'true') {
+        filteredTodos = _.where(todos, { completed: true }); // where method returns all matching items unlike findWhere
+    }
+    else if (queryParams.hasOwnProperty('completed') && queryParams.completed === 'false') {
+        filteredTodos = _.where(todos, { completed: false });
+    }
+
     // we can only pass text back and forth so need to convert json string
-    res.status(200).json(todos);
+    res.status(200).json(filteredTodos);
 });
 
 
@@ -130,7 +141,7 @@ app.get('/todos/:id', (req, res) => {
 // POST /todos
 // we need to load body-parser module and it's an express middleware
 app.post('/todos', (req, res) => {
-    let body = _.pick(req.body, 'description', 'completed'); // only take these key vakue pairs
+    let body = _.pick(req.body, 'description', 'completed'); // only take these key value pairs
 
     // body validation with underscore lib
     if (!_.isBoolean(body.completed) || !_.isString(body.description) || body.description.trim().length === 0)

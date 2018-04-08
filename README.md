@@ -100,8 +100,7 @@ According to the HTTP standard, "PUT" requests should be "idempotent" -- that is
 If you think about it, it means that the kind of piece-wise updating you're doing here with PUT violates the HTTP standard. 
 For example suppose I issue the following requests
 
-1 PUT /todos/3 {description "x",
-completed: false}
+1 PUT /todos/3 {description "x", completed: false}
 
 2 PUT /todos/3 {completed: true}
 
@@ -131,5 +130,11 @@ The second is that you're supposed to avoid conflicting patches from different c
 The client "SHOULD" do this by sending some kind of object version identifier like an Etag header so the server can reject an update if it would result in two clients having conflicting notions of what the resource looks like.
 
 Probably the safest policy is to use PUT with complete representations, although of course that can also result in clients having different ideas of what a resource like todo/3 looks like.
+
+##Query parameter comes at the end of your url  => {{url}}/todos?key=value
+you can have as many query parameters as you want
+=> {{url}}/todos?key=value&anotherKEy=anotherValue
+and get this queries from "req.query", important thing parameters values are string  e.g. bool is not bool type !
+
 
 
