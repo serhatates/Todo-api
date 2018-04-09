@@ -131,10 +131,34 @@ The client "SHOULD" do this by sending some kind of object version identifier li
 
 Probably the safest policy is to use PUT with complete representations, although of course that can also result in clients having different ideas of what a resource like todo/3 looks like.
 
-##Query parameter comes at the end of your url  => {{url}}/todos?key=value
+## Query parameter comes at the end of your url  => {{url}}/todos?key=value
 you can have as many query parameters as you want
 => {{url}}/todos?key=value&anotherKEy=anotherValue
 and get this queries from "req.query", important thing parameters values are string  e.g. bool is not bool type !
 
+## bool string
+var bool = req.query.completed === 'true' ? true : false
 
+This works, but it might not be perfect depending on what you're trying to do.
+ For example, if req.query.completed is not true, but also is not false, it will still show up as false.
+ 
+ You can fix that with a slightly longer version.
+
+var bool;
+
+if (req.query.completed === 'true') {
+
+bool = true;
+
+} else if (req.query.completed === 'false') {
+
+bool = false;
+
+} else {
+
+// Decide what you want to do if it's neither
+
+}
+
+The first example is good for most cases, but if you want more fine grain control, the second solution would be best!
 

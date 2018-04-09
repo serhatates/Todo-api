@@ -104,16 +104,22 @@ app.get('/', (req, res) => {
     res.send('Todo API ROOT');
 });
 
-// GET /todos?completed=true
+// GET /todos?completed=true&q=work
 app.get('/todos', (req, res) => {
     let queryParams = req.query,
         filteredTodos = todos;
 
     if (queryParams.hasOwnProperty('completed') && queryParams.completed === 'true') {
-        filteredTodos = _.where(todos, { completed: true }); // where method returns all matching items unlike findWhere
+        filteredTodos = _.where(todos, { completed: true }); // where method returns all matching items unlike findWhere        
     }
     else if (queryParams.hasOwnProperty('completed') && queryParams.completed === 'false') {
         filteredTodos = _.where(todos, { completed: false });
+    }
+
+    if (queryParams.hasOwnProperty('q') && queryParams.q.trim().length > 0) {
+        filteredTodos = _.filter(filteredTodos, todo => {
+            return todo.description.toLowerCase().indexOf(queryParams.q.toLowerCase()) > -1
+        });
     }
 
     // we can only pass text back and forth so need to convert json string
